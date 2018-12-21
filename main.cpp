@@ -2,12 +2,12 @@
 #include "perlin_noise.h"
 #include "FastNoise.h"
 
-const vec3 BEACH = vec3(0, 0.1, 0.95);
+/*const vec3 BEACH = vec3(0, 0.1, 0.95);
 const vec3 WATER = vec3(0, 0.1, 0.75);
 const vec3 FOREST = vec3(0.2, .7, 0.1);
 const vec3 JUNGLE = vec3(0.2, .9, 0.1);
 const vec3 SNOW = vec3(0.9, 0.9, 0.9);
-
+*/
 
 
 const vec3 SNOW = vec3(0.9, 0.9, 0.9);
@@ -23,6 +23,38 @@ const vec3 GRASSLAND = vec3(0.768627, 0.831373, 0.666667);
 const vec3 TROPICALRAINFOREST = vec3(0.611765, 0.733333, 0.662745);
 const vec3 SEASONFOREST = vec3(0.662745, 0.8, 0.643137);
 const vec3 SUBTROPICALDESERT = vec3(0.913725, 0.866667, 0.780392);
+const vec3 OCEAN = vec3(0.211765, 0.211765, 0.380392);
+const vec3 BEACH = vec3(0.356863, 0.517647, 0.678431);
+
+vec3 biome(float e, float m) {      
+  if (e < 0.35) return BEACH;
+  if (e < 0.4) return OCEAN;
+  
+  if (e > 0.65) {
+    if (m < 0.1) return SCORCHED;
+    if (m < 0.2) return BARE;
+    if (m < 0.5) return TUNDRA;
+    return SNOW;
+  }
+
+  if (e > 0.55) {
+    if (m < 0.33) return TEMPERATEDESERT;
+    if (m < 0.66) return SHRUBLAND;
+    return TAIGA;
+  }
+
+  if (e > 0.45) {
+    if (m < 0.16) return TEMPERATEDESERT;
+    if (m < 0.50) return GRASSLAND;
+    if (m < 0.83) return DECIDUOUSFOREST;
+    return TEMPERATERAINFOREST;
+  }
+
+  if (m < 0.16) return SUBTROPICALDESERT;
+  if (m < 0.33) return GRASSLAND;
+  if (m < 0.66) return SEASONFOREST;
+  return TROPICALRAINFOREST;
+}
 
 int main()
 {
@@ -52,10 +84,9 @@ int main()
             float e = (el.GetNoise(x,y)+1.f) /2.f;
             float elevation = std::pow(e,2);
             float moisture = (ms.GetNoise(x,y)+1.f) /2.f;
-            vec3 c; 
+            vec3 c = biome(e, moisture)*elevation*mult; 
 
-
-            if(e > 0.65)
+            /*if(e > 0.65)
                 c = SNOW*elevation*mult;
             else if(e > 0.55)
                 c = JUNGLE*elevation*mult;
@@ -65,6 +96,7 @@ int main()
                 c = BEACH*elevation*mult;
             else
                 c = WATER*elevation*mult; 
+            */
 
             //c = vec3(e, e, e);
             //c = vec3(moisture, moisture, moisture);
