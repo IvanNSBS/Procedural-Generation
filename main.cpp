@@ -27,8 +27,8 @@ const vec3 OCEAN = vec3(0.211765, 0.211765, 0.380392);
 const vec3 BEACH = vec3(0.356863, 0.517647, 0.678431);
 
 vec3 biome(float e, float m) {      
-  if (e < 0.35) return BEACH;
-  if (e < 0.4) return OCEAN;
+  if (e < 0.4) return BEACH;
+  if (e < 0.3) return OCEAN;
   
   if (e > 0.65) {
     if (m < 0.1) return SCORCHED;
@@ -54,11 +54,25 @@ vec3 biome(float e, float m) {
   if (m < 0.33) return GRASSLAND;
   if (m < 0.66) return SEASONFOREST;
   return TROPICALRAINFOREST;
+
+  /*if(e > 0.65)
+    return SNOW;
+  if(e > 0.55)
+    return TROPICALRAINFOREST;
+  if (e > 0.45)
+    return TROPICALRAINFOREST;
+  if (e > 0.4)
+    return BEACH;
+
+    return OCEAN; */
 }
 
 int main()
 {
-    Image im(480, 480);
+
+    int width = 1920;
+    int height = 1080;
+    Image im(width, height);
 
     PerlinNoise pn(6, 0.6);
 
@@ -71,18 +85,18 @@ int main()
 
     FastNoise ms(5646);
     ms.SetNoiseType(FastNoise::SimplexFractal);
-    ms.SetFrequency(0.00428);
+    ms.SetFrequency(0.00958);
     ms.SetFractalType(FastNoise::FBM);
-    ms.SetFractalOctaves(5);
-    ms.SetFractalGain(0.6);
+    ms.SetFractalOctaves(8);
+    ms.SetFractalGain(0.7);
     
-    const float mult = 1.8;
-    for(int y = 0; y < 480; ++y)
+    const float mult = 1.f;
+    for(int y = 0; y < height; ++y)
     {
-        for(int x = 0; x < 480; ++x)
+        for(int x = 0; x < width; ++x)
         {
             float e = (el.GetNoise(x,y)+1.f) /2.f;
-            float elevation = std::pow(e,2);
+            float elevation = std::pow(e, 1.);
             float moisture = (ms.GetNoise(x,y)+1.f) /2.f;
             vec3 c = biome(e, moisture)*elevation*mult; 
 
