@@ -57,6 +57,14 @@ vec3 biome(float e, float m) {
 
 }
 
+/*vec3 biome(float e, float m)
+{
+    if (e < 0.4) return BEACH;
+    if (e < 0.3) return OCEAN;
+
+    return SEASONFOREST;
+}*/
+
 void clamp_vector(float min, float max, vec3 &v)
 {
     if(v.x() < min)
@@ -104,28 +112,42 @@ int main()
     ms.SetFractalType(FastNoise::FBM);
     ms.SetFractalOctaves(4);
     ms.SetFractalGain(0.9);
+
+    int offset = width/8;
     
-    const float mult = 1.4f;
+    const float mult = 1.5f;
     for(int y = 0; y < height; ++y)
     {
         for(int x = 0; x < width; ++x)
         {
-            float moisture = (ms.GetNoise(x,y)+1.f) /2.f;
+            float moisture = (ms.GetNoise(x,y)+1.f)/2.f;
+            vec3 c1;
+            vec3 c2;
+
+            float e1 = (el.GetNoise(x,y)+1.f)/2.f;
+            float elevation1 = std::pow(e1, 1.);
+
+            float e2 = (el2.GetNoise(x,y)+1.f)/2.f + 0.175;
+            float elevation2 = std::pow(e2, 1.314);
+
             vec3 c;
-            if(x < width/2)
-            {
-                float e = (el.GetNoise(x,y)+1.f) /2.f;
-                float elevation = std::pow(e, 1.);
-                c = biome(e, moisture)*mult*elevation; 
-            }
+
+            if( x < offset)
+                c = biome(e1, moisture)*mult*elevation1;
+            else if(x > width - offset)
+                c = biome(e2, moisture)*mult*elevation2;
             else
             {
-                float e = (el2.GetNoise(x,y)+1.f)/2.f;
-                e+= 0.175;
-                float elevation = std::pow(e, 1.314);
-                c = biome(e, moisture)*1.2*elevation; 
+                float t = (x-offset)/(float)(width-offset);
+
+                float elev = (1 - t)*elevation1 + t*elevation2;
+                float e = (1 - t)*e1 + t*e2;
+
+                c = biome(e, moisture)*mult*elev; 
+
             }
-            im.set_pixel(x,y, c);
+                im.set_pixel(x, y, c);
+
         }
     }
     im.save_as_pbm("Images/", "test");
