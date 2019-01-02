@@ -10,8 +10,8 @@ const vec3 SNOW = vec3(0.9, 0.9, 0.9);
 */
 
 
-const vec3 SNOW = vec3(0.9, 0.9, 0.9);
-const vec3 TUNDRA = vec3(0.866667, 0.866667, 0.733333);
+const vec3 SNOW = vec3(0.8, 0.8, 0.8);
+const vec3 TUNDRA = vec3(0.766667, 0.766667, 0.633333);
 const vec3 BARE = vec3(0.733333, 0.733333, 0.733333);
 const vec3 SCORCHED = vec3(0.6, 0.6, 0.6);
 const vec3 TAIGA = vec3(0.8, 0.831373, 0.733333);
@@ -55,16 +55,24 @@ vec3 biome(float e, float m) {
   if (m < 0.66) return SEASONFOREST;
   return TROPICALRAINFOREST;
 
-  /*if(e > 0.65)
-    return SNOW;
-  if(e > 0.55)
-    return TROPICALRAINFOREST;
-  if (e > 0.45)
-    return TROPICALRAINFOREST;
-  if (e > 0.4)
-    return BEACH;
+}
 
-    return OCEAN; */
+void clamp_vector(float min, float max, vec3 &v)
+{
+    if(v.x() < min)
+        v.e[0] = min;
+    else if (v.x() > max)
+        v.e[0] = max;
+
+    if(v.y() < min)
+        v.e[1] = min;
+    else if (v.y() > max)
+        v.e[1] = max;
+
+    if(v.z() < min)
+        v.e[2] = min;
+    else if (v.z() > max)
+        v.e[2] = max;
 }
 
 int main()
@@ -83,38 +91,40 @@ int main()
     el.SetFractalOctaves(8);
     el.SetFractalGain(0.65);
 
-    FastNoise ms(5646);
+    FastNoise el2(5646);
+    el2.SetNoiseType(FastNoise::SimplexFractal);
+    el2.SetFrequency(0.006513);
+    el2.SetFractalType(FastNoise::FBM);
+    el2.SetFractalOctaves(7);
+    el2.SetFractalGain(0.6);
+
+    FastNoise ms(564894);
     ms.SetNoiseType(FastNoise::SimplexFractal);
-    ms.SetFrequency(0.00958);
+    ms.SetFrequency(0.048);
     ms.SetFractalType(FastNoise::FBM);
-    ms.SetFractalOctaves(8);
-    ms.SetFractalGain(0.7);
+    ms.SetFractalOctaves(4);
+    ms.SetFractalGain(0.9);
     
-    const float mult = 1.f;
+    const float mult = 1.4f;
     for(int y = 0; y < height; ++y)
     {
         for(int x = 0; x < width; ++x)
         {
-            float e = (el.GetNoise(x,y)+1.f) /2.f;
-            float elevation = std::pow(e, 1.);
             float moisture = (ms.GetNoise(x,y)+1.f) /2.f;
-            vec3 c = biome(e, moisture)*elevation*mult; 
-
-            /*if(e > 0.65)
-                c = SNOW*elevation*mult;
-            else if(e > 0.55)
-                c = JUNGLE*elevation*mult;
-            else if (e > 0.45)
-                c = FOREST*elevation*mult;
-            else if (e > 0.4)
-                c = BEACH*elevation*mult;
+            vec3 c;
+            if(x < width/2)
+            {
+                float e = (el.GetNoise(x,y)+1.f) /2.f;
+                float elevation = std::pow(e, 1.);
+                c = biome(e, moisture)*mult*elevation; 
+            }
             else
-                c = WATER*elevation*mult; 
-            */
-
-            //c = vec3(e, e, e);
-            //c = vec3(moisture, moisture, moisture);
-            //printf("noise: %f\n", n);
+            {
+                float e = (el2.GetNoise(x,y)+1.f)/2.f;
+                e+= 0.175;
+                float elevation = std::pow(e, 1.314);
+                c = biome(e, moisture)*1.2*elevation; 
+            }
             im.set_pixel(x,y, c);
         }
     }
